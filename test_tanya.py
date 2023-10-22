@@ -3,13 +3,15 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
 
+
 @pytest.fixture()
 def driver():
     driver = webdriver.Chrome()
     yield driver
     driver.quit()
-# Авторизация используя корректные данные (standard_user, secret_sauce)
 
+
+# Authorization using correct data (standard_user, secret_sauce)
 def test_login_positiv(driver):
     driver.get("https://www.saucedemo.com/")
 
@@ -20,14 +22,9 @@ def test_login_positiv(driver):
     time.sleep(5)
 
     assert driver.current_url == "https://www.saucedemo.com/inventory.html"
-    # menu_button = driver.find_element(By.XPATH, '//button[@id="react-burger-menu-btn"]')
-    # menu_button.click()
-    # time.sleep(2)
-    # reset_button = driver.find_element(By.XPATH, "//*[text()='Reset App State']")
-    # reset_button.click()
-#    driver.quit()
 
-# Авторизация используя некорректные данные (user, user)
+
+# Authorization using incorrect data (user, user)
 def test_login_negative(driver):
     driver.get("https://www.saucedemo.com/")
 
@@ -35,16 +32,13 @@ def test_login_negative(driver):
     driver.find_element(By.XPATH, "//input[@id = 'password']").send_keys("uesr")
     driver.find_element(By.XPATH, "//input[@id = 'login-button']").click()
 
-    text_err = driver.find_element(By.XPATH, "//div[@class='error-message-container error']/h3[@data-test='error']").text
+    text_err = driver.find_element(By.XPATH,
+                                   "//div[@class='error-message-container error']/h3[@data-test='error']").text
 
     assert text_err == "Epic sadface: Username and password do not match any user in this service"
 
-    time.sleep(5)
 
-    #driver.quit()
-
-# Добавление товара в корзину через каталог
-
+# Adding an item to the cart via the catalog
 def test_add_item_from_catalog(driver):
     driver.get("https://www.saucedemo.com/")
 
@@ -62,18 +56,8 @@ def test_add_item_from_catalog(driver):
 
     assert button_text == "Remove"
 
-    # menu_button = driver.find_element(By.XPATH, '//button[@id="react-burger-menu-btn"]')
-    # menu_button.click()
-    # time.sleep(2)
-    # reset_button = driver.find_element(By.XPATH, "//*[text()='Reset App State']")
-    # reset_button.click()
 
-    time.sleep(5)
-
-#    driver.quit()
-
-# Удаление товара из корзины через корзину
-
+# Removing an item from the shopping cart via the shopping cart
 def test_delete_from_cart(driver):
     driver.get("https://www.saucedemo.com/")
 
@@ -97,11 +81,7 @@ def test_delete_from_cart(driver):
 
     assert len(find_list) == 0
 
-  #  driver.quit()
-
-
-# Добавление товара в корзину из карточки товара AND Успешный переход к карточке товара после клика на картинку товара
-
+# Adding an item to the cart from the product card
 def test_add_item_from_card(driver):
     driver.get("https://www.saucedemo.com/")
 
@@ -121,10 +101,7 @@ def test_add_item_from_card(driver):
 
     assert text_remove == "Remove"
 
-   # driver.quit()
-
-#Удаление товара из корзины через карточку товара
-
+# Removing an item from the shopping cart via the product card
 def test_delete_item_from_card(driver):
     driver.get("https://www.saucedemo.com/")
 
@@ -145,12 +122,8 @@ def test_delete_item_from_card(driver):
 
     assert text_remove == "Add to cart"
 
- #   driver.quit()
-
-# Бургер меню. Выход из системы
-
+# Burger menu. Log out of the system
 def test_burger_exit(driver):
-
     driver.get("https://www.saucedemo.com/")
 
     driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
@@ -169,15 +142,11 @@ def test_burger_exit(driver):
 
     log_value = driver.find_element(By.XPATH, '//div[@class="login_logo"]').text
 
-    # print('1111111', log_value)
-
     assert log_value == "Swag Labs"
 
-#    driver.quit()
 
 
-# Бургер меню. Проверка работоспособности кнопки "About" в меню
-#
+# Burger menu. Checking the operability of the "About" button in the menu
 #
 #     driver.get("https://www.saucedemo.com/")
 #
@@ -192,6 +161,4 @@ def test_burger_exit(driver):
 #     time.sleep(5)
 #
 #     driver.find_element(By.XPATH, '//a[@id = "about_sidebar_link"]').click()
-#
-#
-#     driver.quit()
+

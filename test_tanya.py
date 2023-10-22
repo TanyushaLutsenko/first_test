@@ -1,12 +1,16 @@
+import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
 
-driver = webdriver.Chrome()
-
+@pytest.fixture()
+def driver():
+    driver = webdriver.Chrome()
+    yield driver
+    driver.quit()
 # Авторизация используя корректные данные (standard_user, secret_sauce)
 
-def test_login_positiv():
+def test_login_positiv(driver):
     driver.get("https://www.saucedemo.com/")
 
     driver.find_element(By.XPATH, "//input[@id = 'user-name']").send_keys("standard_user")
@@ -16,11 +20,15 @@ def test_login_positiv():
     time.sleep(5)
 
     assert driver.current_url == "https://www.saucedemo.com/inventory.html"
-
-    driver.quit()
+    # menu_button = driver.find_element(By.XPATH, '//button[@id="react-burger-menu-btn"]')
+    # menu_button.click()
+    # time.sleep(2)
+    # reset_button = driver.find_element(By.XPATH, "//*[text()='Reset App State']")
+    # reset_button.click()
+#    driver.quit()
 
 # Авторизация используя некорректные данные (user, user)
-def test_login_negative():
+def test_login_negative(driver):
     driver.get("https://www.saucedemo.com/")
 
     driver.find_element(By.XPATH, "//input[@id = 'user-name']").send_keys("user")
@@ -33,11 +41,11 @@ def test_login_negative():
 
     time.sleep(5)
 
-    driver.quit()
+    #driver.quit()
 
 # Добавление товара в корзину через каталог
 
-def test_add_item_from_catalog():
+def test_add_item_from_catalog(driver):
     driver.get("https://www.saucedemo.com/")
 
     driver.find_element(By.XPATH, "//input[@id = 'user-name']").send_keys("standard_user")
@@ -54,13 +62,19 @@ def test_add_item_from_catalog():
 
     assert button_text == "Remove"
 
+    # menu_button = driver.find_element(By.XPATH, '//button[@id="react-burger-menu-btn"]')
+    # menu_button.click()
+    # time.sleep(2)
+    # reset_button = driver.find_element(By.XPATH, "//*[text()='Reset App State']")
+    # reset_button.click()
+
     time.sleep(5)
 
-    driver.quit()
+#    driver.quit()
 
 # Удаление товара из корзины через корзину
 
-def test_delete_from_cart():
+def test_delete_from_cart(driver):
     driver.get("https://www.saucedemo.com/")
 
     driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
@@ -83,12 +97,12 @@ def test_delete_from_cart():
 
     assert len(find_list) == 0
 
-    driver.quit()
+  #  driver.quit()
 
 
 # Добавление товара в корзину из карточки товара AND Успешный переход к карточке товара после клика на картинку товара
 
-def test_add_item_from_card():
+def test_add_item_from_card(driver):
     driver.get("https://www.saucedemo.com/")
 
     driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
@@ -107,11 +121,11 @@ def test_add_item_from_card():
 
     assert text_remove == "Remove"
 
-    driver.quit()
+   # driver.quit()
 
 #Удаление товара из корзины через карточку товара
 
-def test_delete_item_from_card():
+def test_delete_item_from_card(driver):
     driver.get("https://www.saucedemo.com/")
 
     driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
@@ -131,11 +145,11 @@ def test_delete_item_from_card():
 
     assert text_remove == "Add to cart"
 
-    driver.quit()
+ #   driver.quit()
 
 # Бургер меню. Выход из системы
 
-def test_burger_exit():
+def test_burger_exit(driver):
 
     driver.get("https://www.saucedemo.com/")
 
@@ -159,27 +173,25 @@ def test_burger_exit():
 
     assert log_value == "Swag Labs"
 
-    driver.quit()
+#    driver.quit()
 
 
 # Бургер меню. Проверка работоспособности кнопки "About" в меню
-
-
-    driver.get("https://www.saucedemo.com/")
-
-    driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
-    driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
-    driver.find_element(By.XPATH, '//input[@data-test="login-button"]').click()
-
-    time.sleep(5)
-
-    driver.find_element(By.XPATH, '//button[@id = "react-burger-menu-btn"]').click()
-
-    time.sleep(5)
-
-    driver.find_element(By.XPATH, '//a[@id = "about_sidebar_link"]').click()
-
-
-
-
-    driver.quit()
+#
+#
+#     driver.get("https://www.saucedemo.com/")
+#
+#     driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
+#     driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
+#     driver.find_element(By.XPATH, '//input[@data-test="login-button"]').click()
+#
+#     time.sleep(5)
+#
+#     driver.find_element(By.XPATH, '//button[@id = "react-burger-menu-btn"]').click()
+#
+#     time.sleep(5)
+#
+#     driver.find_element(By.XPATH, '//a[@id = "about_sidebar_link"]').click()
+#
+#
+#     driver.quit()

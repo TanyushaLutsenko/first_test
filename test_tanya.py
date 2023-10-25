@@ -1,50 +1,53 @@
+import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
+from data import LOGIN, PASSWORD, MAIN_PAGE
+from locators import USERNAME_FIELD, PASSWORD_FIELD, LOGIN_BUTTON, FAILD_DATA
 
-driver = webdriver.Chrome()
 
-# Авторизация используя корректные данные (standard_user, secret_sauce)
+@pytest.fixture
+def driver():
+    driver = webdriver.Chrome()
+    yield driver
+    driver.quit()
 
-def test_login_positiv():
-    driver.get("https://www.saucedemo.com/")
 
-    driver.find_element(By.XPATH, "//input[@id = 'user-name']").send_keys("standard_user")
-    driver.find_element(By.XPATH, "//input[@id = 'password']").send_keys("secret_sauce")
-    driver.find_element(By.XPATH, "//input[@id = 'login-button']").click()
+@pytest.fixture(autouse=True)
+def login1(driver):
+    driver.get(MAIN_PAGE)
+
+    driver.find_element(By.XPATH, USERNAME_FIELD).send_keys(LOGIN)
+    driver.find_element(By.XPATH, PASSWORD_FIELD).send_keys(PASSWORD)
+    driver.find_element(By.XPATH, LOGIN_BUTTON).click()
 
     time.sleep(5)
 
+
+# Authorization using correct data (standard_user, secret_sauce)
+def test_login_positiv(driver):
     assert driver.current_url == "https://www.saucedemo.com/inventory.html"
 
-    driver.quit()
 
-# Авторизация используя некорректные данные (user, user)
-def test_login_negative():
-    driver.get("https://www.saucedemo.com/")
+# Authorization using incorrect data (user, user)
+def test_login_negative(driver):
+    driver.get(MAIN_PAGE)
 
-    driver.find_element(By.XPATH, "//input[@id = 'user-name']").send_keys("user")
-    driver.find_element(By.XPATH, "//input[@id = 'password']").send_keys("uesr")
-    driver.find_element(By.XPATH, "//input[@id = 'login-button']").click()
+    driver.find_element(By.XPATH, USERNAME_FIELD).send_keys(FAILD_DATA)
+    driver.find_element(By.XPATH, PASSWORD_FIELD).send_keys(FAILD_DATA)
+    driver.find_element(By.XPATH, LOGIN_BUTTON).click()
 
-    text_err = driver.find_element(By.XPATH, "//div[@class='error-message-container error']/h3[@data-test='error']").text
+    time.sleep(5)
+
+    text_err = driver.find_element(By.XPATH,
+                                   "//div[@class='error-message-container error']/h3[@data-test='error']").text
 
     assert text_err == "Epic sadface: Username and password do not match any user in this service"
 
-    time.sleep(5)
 
-    driver.quit()
-
-# Добавление товара в корзину через каталог
-
-def test_add_item_from_catalog():
-    driver.get("https://www.saucedemo.com/")
-
-    driver.find_element(By.XPATH, "//input[@id = 'user-name']").send_keys("standard_user")
-    driver.find_element(By.XPATH, "//input[@id = 'password']").send_keys("secret_sauce")
-    driver.find_element(By.XPATH, "//input[@id = 'login-button']").click()
-
-    driver.find_element(By.XPATH, "//button[@id = 'add-to-cart-sauce-labs-bolt-t-shirt']").click()
+# Adding an item to the cart via the catalog
+def test_add_item_from_catalog(driver):
+    driver.find_element(By.XPATH, "//button[@id='add-to-cart-sauce-labs-bolt-t-shirt']").click()
 
     time.sleep(5)
 
@@ -54,21 +57,9 @@ def test_add_item_from_catalog():
 
     assert button_text == "Remove"
 
-    time.sleep(5)
 
-    driver.quit()
-
-# Удаление товара из корзины через корзину
-
-def test_delete_from_cart():
-    driver.get("https://www.saucedemo.com/")
-
-    driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
-    driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
-    driver.find_element(By.XPATH, '//input[@data-test="login-button"]').click()
-
-    time.sleep(5)
-
+# Removing an item from the shopping cart via the shopping cart
+def test_delete_from_cart(driver):
     driver.find_element(By.XPATH, '//img[@alt="Sauce Labs Backpack"]').click()
     driver.find_element(By.XPATH, '//button[contains(text(), "Add to cart")]').click()
 
@@ -83,20 +74,9 @@ def test_delete_from_cart():
 
     assert len(find_list) == 0
 
-    driver.quit()
 
-
-# Добавление товара в корзину из карточки товара AND Успешный переход к карточке товара после клика на картинку товара
-
-def test_add_item_from_card():
-    driver.get("https://www.saucedemo.com/")
-
-    driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
-    driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
-    driver.find_element(By.XPATH, '//input[@data-test="login-button"]').click()
-
-    time.sleep(5)
-
+# Adding an item to the cart from the product card
+def test_add_item_from_card(driver):
     driver.find_element(By.XPATH, '//img[@src = "/static/media/bolt-shirt-1200x1500.c2599ac5.jpg"]').click()
     driver.find_element(By.XPATH, '//button[@id = "add-to-cart-sauce-labs-bolt-t-shirt"]').click()
 
@@ -107,19 +87,9 @@ def test_add_item_from_card():
 
     assert text_remove == "Remove"
 
-    driver.quit()
 
-#Удаление товара из корзины через карточку товара
-
-def test_delete_item_from_card():
-    driver.get("https://www.saucedemo.com/")
-
-    driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
-    driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
-    driver.find_element(By.XPATH, '//input[@data-test="login-button"]').click()
-
-    time.sleep(5)
-
+# Removing an item from the shopping cart via the product card
+def test_delete_item_from_card(driver):
     driver.find_element(By.XPATH, '//img[@src = "/static/media/bolt-shirt-1200x1500.c2599ac5.jpg"]').click()
     driver.find_element(By.XPATH, '//button[@id = "add-to-cart-sauce-labs-bolt-t-shirt"]').click()
 
@@ -131,20 +101,9 @@ def test_delete_item_from_card():
 
     assert text_remove == "Add to cart"
 
-    driver.quit()
 
-# Бургер меню. Выход из системы
-
-def test_burger_exit():
-
-    driver.get("https://www.saucedemo.com/")
-
-    driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
-    driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
-    driver.find_element(By.XPATH, '//input[@data-test="login-button"]').click()
-
-    time.sleep(5)
-
+# Burger menu. Log out of the system
+def test_burger_exit(driver):
     driver.find_element(By.XPATH, '//button[@id = "react-burger-menu-btn"]').click()
 
     time.sleep(5)
@@ -155,31 +114,25 @@ def test_burger_exit():
 
     log_value = driver.find_element(By.XPATH, '//div[@class="login_logo"]').text
 
-    # print('1111111', log_value)
-
     assert log_value == "Swag Labs"
 
-    driver.quit()
+# Burger menu. Checking the operability of the "About" button in the menu
+#
+#     driver.get(MAIN_PAGE)
+#
+#     driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
+#     driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
+#     driver.find_element(By.XPATH, '//input[@data-test="login-button"]').click()
+#
+#     time.sleep(5)
+#
+#     driver.find_element(By.XPATH, '//button[@id = "react-burger-menu-btn"]').click()
+#
+#     time.sleep(5)
+#
+#     driver.find_element(By.XPATH, '//a[@id = "about_sidebar_link"]').click()
 
-
-# Бургер меню. Проверка работоспособности кнопки "About" в меню
-
-
-    driver.get("https://www.saucedemo.com/")
-
-    driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
-    driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
-    driver.find_element(By.XPATH, '//input[@data-test="login-button"]').click()
-
-    time.sleep(5)
-
-    driver.find_element(By.XPATH, '//button[@id = "react-burger-menu-btn"]').click()
-
-    time.sleep(5)
-
-    driver.find_element(By.XPATH, '//a[@id = "about_sidebar_link"]').click()
-
-
-
-
-    driver.quit()
+# setTimeout(function()
+# {
+#     debugger;
+# }, 3000);

@@ -2,35 +2,42 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
+from data import LOGIN, PASSWORD, MAIN_PAGE
+from locators import USERNAME_FIELD, PASSWORD_FIELD, LOGIN_BUTTON, FAILD_DATA
 
 
-@pytest.fixture()
+@pytest.fixture
 def driver():
     driver = webdriver.Chrome()
     yield driver
     driver.quit()
 
 
-# Authorization using correct data (standard_user, secret_sauce)
-def test_login_positiv(driver):
-    driver.get("https://www.saucedemo.com/")
+@pytest.fixture(autouse=True)
+def login1(driver):
+    driver.get(MAIN_PAGE)
 
-    driver.find_element(By.XPATH, "//input[@id = 'user-name']").send_keys("standard_user")
-    driver.find_element(By.XPATH, "//input[@id = 'password']").send_keys("secret_sauce")
-    driver.find_element(By.XPATH, "//input[@id = 'login-button']").click()
+    driver.find_element(By.XPATH, USERNAME_FIELD).send_keys(LOGIN)
+    driver.find_element(By.XPATH, PASSWORD_FIELD).send_keys(PASSWORD)
+    driver.find_element(By.XPATH, LOGIN_BUTTON).click()
 
     time.sleep(5)
 
+
+# Authorization using correct data (standard_user, secret_sauce)
+def test_login_positiv(driver):
     assert driver.current_url == "https://www.saucedemo.com/inventory.html"
 
 
 # Authorization using incorrect data (user, user)
 def test_login_negative(driver):
-    driver.get("https://www.saucedemo.com/")
+    driver.get(MAIN_PAGE)
 
-    driver.find_element(By.XPATH, "//input[@id = 'user-name']").send_keys("user")
-    driver.find_element(By.XPATH, "//input[@id = 'password']").send_keys("uesr")
-    driver.find_element(By.XPATH, "//input[@id = 'login-button']").click()
+    driver.find_element(By.XPATH, USERNAME_FIELD).send_keys(FAILD_DATA)
+    driver.find_element(By.XPATH, PASSWORD_FIELD).send_keys(FAILD_DATA)
+    driver.find_element(By.XPATH, LOGIN_BUTTON).click()
+
+    time.sleep(5)
 
     text_err = driver.find_element(By.XPATH,
                                    "//div[@class='error-message-container error']/h3[@data-test='error']").text
@@ -40,13 +47,7 @@ def test_login_negative(driver):
 
 # Adding an item to the cart via the catalog
 def test_add_item_from_catalog(driver):
-    driver.get("https://www.saucedemo.com/")
-
-    driver.find_element(By.XPATH, "//input[@id = 'user-name']").send_keys("standard_user")
-    driver.find_element(By.XPATH, "//input[@id = 'password']").send_keys("secret_sauce")
-    driver.find_element(By.XPATH, "//input[@id = 'login-button']").click()
-
-    driver.find_element(By.XPATH, "//button[@id = 'add-to-cart-sauce-labs-bolt-t-shirt']").click()
+    driver.find_element(By.XPATH, "//button[@id='add-to-cart-sauce-labs-bolt-t-shirt']").click()
 
     time.sleep(5)
 
@@ -59,14 +60,6 @@ def test_add_item_from_catalog(driver):
 
 # Removing an item from the shopping cart via the shopping cart
 def test_delete_from_cart(driver):
-    driver.get("https://www.saucedemo.com/")
-
-    driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
-    driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
-    driver.find_element(By.XPATH, '//input[@data-test="login-button"]').click()
-
-    time.sleep(5)
-
     driver.find_element(By.XPATH, '//img[@alt="Sauce Labs Backpack"]').click()
     driver.find_element(By.XPATH, '//button[contains(text(), "Add to cart")]').click()
 
@@ -81,16 +74,9 @@ def test_delete_from_cart(driver):
 
     assert len(find_list) == 0
 
+
 # Adding an item to the cart from the product card
 def test_add_item_from_card(driver):
-    driver.get("https://www.saucedemo.com/")
-
-    driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
-    driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
-    driver.find_element(By.XPATH, '//input[@data-test="login-button"]').click()
-
-    time.sleep(5)
-
     driver.find_element(By.XPATH, '//img[@src = "/static/media/bolt-shirt-1200x1500.c2599ac5.jpg"]').click()
     driver.find_element(By.XPATH, '//button[@id = "add-to-cart-sauce-labs-bolt-t-shirt"]').click()
 
@@ -101,16 +87,9 @@ def test_add_item_from_card(driver):
 
     assert text_remove == "Remove"
 
+
 # Removing an item from the shopping cart via the product card
 def test_delete_item_from_card(driver):
-    driver.get("https://www.saucedemo.com/")
-
-    driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
-    driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
-    driver.find_element(By.XPATH, '//input[@data-test="login-button"]').click()
-
-    time.sleep(5)
-
     driver.find_element(By.XPATH, '//img[@src = "/static/media/bolt-shirt-1200x1500.c2599ac5.jpg"]').click()
     driver.find_element(By.XPATH, '//button[@id = "add-to-cart-sauce-labs-bolt-t-shirt"]').click()
 
@@ -122,16 +101,9 @@ def test_delete_item_from_card(driver):
 
     assert text_remove == "Add to cart"
 
+
 # Burger menu. Log out of the system
 def test_burger_exit(driver):
-    driver.get("https://www.saucedemo.com/")
-
-    driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
-    driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
-    driver.find_element(By.XPATH, '//input[@data-test="login-button"]').click()
-
-    time.sleep(5)
-
     driver.find_element(By.XPATH, '//button[@id = "react-burger-menu-btn"]').click()
 
     time.sleep(5)
@@ -144,11 +116,9 @@ def test_burger_exit(driver):
 
     assert log_value == "Swag Labs"
 
-
-
 # Burger menu. Checking the operability of the "About" button in the menu
 #
-#     driver.get("https://www.saucedemo.com/")
+#     driver.get(MAIN_PAGE)
 #
 #     driver.find_element(By.XPATH, '//input[@data-test="username"]').send_keys("standard_user")
 #     driver.find_element(By.XPATH, '//input[@data-test="password"]').send_keys("secret_sauce")
@@ -162,3 +132,7 @@ def test_burger_exit(driver):
 #
 #     driver.find_element(By.XPATH, '//a[@id = "about_sidebar_link"]').click()
 
+# setTimeout(function()
+# {
+#     debugger;
+# }, 3000);
